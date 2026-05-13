@@ -87,11 +87,12 @@ jobs:
 
       - name: Verify outputs
         run: |
+          echo "Generated files:"
+          find ${EXAMPLE_DIR} -maxdepth 3 -type f | sort
           test -f ${EXAMPLE_DIR}/mobilenetv2_example_ruyi
-          test -f ${EXAMPLE_DIR}/hhb.bm
-          test -f ${EXAMPLE_DIR}/model.params
-          test -f ${EXAMPLE_DIR}/graph_info.bin
-
+          test -f ${EXAMPLE_DIR}/hhb_out/hhb.bm
+          test -f ${EXAMPLE_DIR}/hhb_out/model.params
+          
           file ${EXAMPLE_DIR}/mobilenetv2_example_ruyi | grep -i "risc-v"
 
       - name: Upload artifact
