@@ -1,0 +1,91 @@
+name: LicheePi 4A NPU CI (MobileNetV2)
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-and-quantize:
+    runs-on: ubuntu-latest
+    # 【完美契合文档】直接使用你文档中提到的 HHB 镜像作为底座
+    container:
+      image: hhb4tools/hhb:2.6.17
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 1. 安装基础工具
+      - name: Install System Dependencies
+        run: |
+          apt-get update
+          # 安装你文档后续用到的 git 和下载工具 wget
+          apt-get install -y wget curl git bzip2 xz-utils sudo
+
+      # 2. 准备 OpenCV (复刻文档中的 git clone)
+      - name: Clone prebuilt_opencv
+        run: |
+          cd th1520_npu
+          git clone https://github.com/zhangwm-pt/prebuilt_opencv.git
+
+      # 3. HHB 模型编译 (严格复刻你的参数)
+      - name: HHB Model Quantization
+        working-directory: th1520_npu/onnx_mobilenetv2_c++
+        run: |
+          # 此时 mobilenetv2-12.onnx 和 persian_cat.jpg 已经在代码仓库里了，直接转换！
+          hhb -D --model-file mobilenetv2-12.onnx \
+            --data-scale 0.017 \
+            --data-mean "124 117 104" \
+            --board th1520 \
+            --postprocess save_and_top5 \
+            --input-name "input" \
+            --output-name "output" \
+            --input-shape "1 3 224 224" \
+            --calibrate-dataset persian_cat.jpg \
+            --quantization-scheme "int8_asym"
+
+      # 4. 安装 RuyiSDK (复刻文档中的 wget & install)
+      - name: Install RuyiSDK & Toolchain
+        run: |
+          wget https://mirror.iscas.ac.cn/ruyisdk/ruyi/tags/0.47.0/ruyi-0.47.0.amd64
+          chmod +x ruyi-0.47.0.amd64
+          mv ruyi-0.47.0.amd64 /usr/local/bin/ruyi
+          ruyi update
+          ruyi install gnu-plct-xthead
+
+      # 5. 激活环境并交叉编译 (复刻文档的 g++ 指令)
+      - name: Cross Compile C++ App
+        working-directory: th1520_npu
+        run: |
+          # 创建并激活 ruyi 虚拟环境 (合并在一个步骤里确保环境变量生效)
+          ruyi venv -t gnu-plct-xthead sipeed-lpi4a yolox-venv
+          source ./yolox-venv/bin/ruyi-activate
+          
+          # 进入代码目录开始编译
+          cd onnx_mobilenetv2_c++
+          
+          # 你的原版编译命令，我仅在最后加了一个 -Wl,-rpath,'$ORIGIN' 
+          # 这能大大缓解你在文档最后提到的 "libshl_th1520.so.2" 软链接找不到的问题
+          riscv64-plctxthead-linux-gnu-g++ \
+            main.cpp \
+            -I../prebuilt_opencv/include/opencv4 \
+            -L../prebuilt_opencv/lib \
+            -L../prebuilt_opencv/lib/opencv4/3rdparty \
+            -lopencv_imgproc -lopencv_imgcodecs -lopencv_core \
+            -llibjpeg-turbo -llibwebp -llibpng -llibtiff -llibopenjp2 \
+            -lzlib -lcsi_cv -latomic -ldl -lpthread -lrt \
+            -Wl,-rpath,'$ORIGIN' \
+            -o mobilenetv2_example_ruyi
+
+      # 6. 打包收集板端所需文件
+      - name: Upload Artifacts for LicheePi 4A
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobilenetv2_lpi4a_deploy_package
+          path: |
+            th1520_npu/onnx_mobilenetv2_c++/mobilenetv2_example_ruyi
+            th1520_npu/onnx_mobilenetv2_c++/hhb.bm
+            th1520_npu/onnx_mobilenetv2_c++/model.params
+            th1520_npu/onnx_mobilenetv2_c++/persian_cat.jpg
