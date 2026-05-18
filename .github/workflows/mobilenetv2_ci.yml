@@ -2,7 +2,13 @@ name: Lichee Pi 4A MobilenetV2 CI
 
 on:
   push:
+    paths:
+      - 'th1520_npu/onnx_mobilenetv2_cpp/**'
+      - '.github/workflows/mobilenetv2.yml'
   pull_request:
+    paths:
+      - 'th1520_npu/onnx_mobilenetv2_cpp/**'
+      - '.github/workflows/mobilenetv2.yml'
   workflow_dispatch:
 
 env:
