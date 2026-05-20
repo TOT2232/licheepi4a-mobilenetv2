@@ -86,7 +86,7 @@ jobs:
         sed -i 's/shl_ref_f32_to_input_dtype/shl_c920_f32_to_input_dtype/g' yolov5n.c
 
         # 拷 omp.h
-        cp ../omp.h .
+        cp ../../omp.h .
 
         riscv64-plctxthead-linux-gnu-gcc \
           yolov5n.c \
