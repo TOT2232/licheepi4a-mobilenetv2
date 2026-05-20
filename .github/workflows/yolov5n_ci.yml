@@ -38,6 +38,7 @@ jobs:
           set -e
           cd /workspace/$DEMO_DIR
 
+          pip install torch==2.0.1 torchvision==0.15.2
           pip install ultralytics opencv-python-headless pandas tqdm seaborn
           git clone https://github.com/ultralytics/yolov5.git
           cd yolov5
