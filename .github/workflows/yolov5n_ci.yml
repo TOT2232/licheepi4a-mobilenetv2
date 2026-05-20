@@ -41,9 +41,8 @@ jobs:
           pip install ultralytics
           git clone https://github.com/ultralytics/yolov5.git
           cd yolov5
-          git checkout v6.2
           sed -i '1i# -*- coding: utf-8 -*-' export.py
-          python export.py --weights yolov5n.pt --include onnx --imgsz 384 640
+          python3 export.py --weights yolov5n.pt --include onnx --imgsz 384 640
           cp yolov5n.onnx ..
           cd ..
 
