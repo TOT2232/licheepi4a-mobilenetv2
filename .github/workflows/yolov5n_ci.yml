@@ -89,26 +89,26 @@ jobs:
         cp ../../omp.h .
 
         riscv64-plctxthead-linux-gnu-gcc \
-          yolov5n.c \
-          -o yolov5n_example \
-          hhb_out/io.c \
-          hhb_out/model.c \
-          -Wl,--gc-sections \
-          -O2 -g \
-          -mabi=lp64d \
-          -I . \
-          -I hhb_out/ \
-          -I ../hhb_libs/hhb_c920/include/ \
-          -I ../hhb_libs/hhb_c920/include/shl_public/ \
-          -I ../hhb_libs/hhb_c920/include/csinn/ \
-          -L ../hhb_libs/hhb_c920/lib/ \
-          -lshl \
-          -L ../hhb_libs/hhb_decode_lib/ \
-          -L ../hhb_libs/hhb_runtime/ \
-          -lprebuilt_runtime \
-          -ljpeg -lpng -lz -lstdc++ -lm \
-          -march=rv64gcv0p7_zfh_xtheadc \
-          -Wl,-unresolved-symbols=ignore-in-shared-libs
+        yolov5n.c \
+        -o yolov5n_example \
+        hhb_out/io.c \
+        hhb_out/model.c \
+        -Wl,--gc-sections \
+        -O2 -g \
+        -mabi=lp64d \
+        -I . \
+        -I hhb_out/ \
+        -I ../../hhb_libs/hhb_c920/include/ \
+        -I ../../hhb_libs/hhb_c920/include/shl_public/ \
+        -I ../../hhb_libs/hhb_c920/include/csinn/ \
+        -L ../../hhb_libs/hhb_c920/lib/ \
+        -lshl \
+        -L ../../hhb_libs/hhb_decode_lib/ \
+        -L ../../hhb_libs/hhb_runtime/ \
+        -lprebuilt_runtime \
+        -ljpeg -lpng -lz -lstdc++ -lm \
+        -march=rv64gcv0p7_zfh_xtheadc \
+        -Wl,-unresolved-symbols=ignore-in-shared-libs
 
     - name: Verify Build
       run: |
