@@ -39,6 +39,10 @@ jobs:
           cd /workspace/$DEMO_DIR
 
           pip install ultralytics
+          pip install opencv-python-headless
+          pip install pandas
+          pip install tqdm
+          pip install seaborn
           git clone https://github.com/ultralytics/yolov5.git
           cd yolov5
           sed -i '1i# -*- coding: utf-8 -*-' export.py
